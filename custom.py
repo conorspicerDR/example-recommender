@@ -22,8 +22,8 @@ def score_unstructured(model, customer_id, **kwargs):
         item_map = pickle.load(f)
     item_ids = {idx: i for i, idx in item_map.items()}
 
-    user_id = user_map[customer_id]
-    # if csr is empty for a user model will always predict items with index 0-11
+    user_id = user_map.get(customer_id)
+    # if csr is empty for a user, but their ID has been seen, model will always predict items with index 0-11
     if user_id:
         ids, scores = model.recommend(
             user_id,
