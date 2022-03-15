@@ -44,24 +44,24 @@ def score(data, model, **kwargs):
     return predictions
 
 
-# local testing
-if __name__ == '__main__':
-    from datetime import datetime
-
-    start = datetime.utcnow()
-    print('Started at', start)
-
-    base_path = 'data/'
-    csv_train = f'{base_path}transactions_train.csv'
-    transactions_df = pd.read_csv(csv_train, dtype={'article_id': str}, parse_dates=['t_dat'])
-
-    prediction_cut = transactions_df['t_dat'].max() - pd.Timedelta(days=30)
-    transactions_pred = transactions_df[transactions_df['t_dat'] > prediction_cut].copy()
-    del transactions_df
-    csr_pred = transform(transactions_pred)
-
-    latest_model = load_model()
-
-    df_preds = score(csr_pred, latest_model)
-    df_preds.to_csv('data/local_test.csv', index=False)
-    print('Total time:', str(datetime.utcnow() - start))
+# # local testing
+# if __name__ == '__main__':
+#     from datetime import datetime
+#
+#     start = datetime.utcnow()
+#     print('Started at', start)
+#
+#     base_path = 'data/'
+#     csv_train = f'{base_path}transactions_train.csv'
+#     transactions_df = pd.read_csv(csv_train, dtype={'article_id': str}, parse_dates=['t_dat'])
+#
+#     prediction_cut = transactions_df['t_dat'].max() - pd.Timedelta(days=30)
+#     transactions_pred = transactions_df[transactions_df['t_dat'] > prediction_cut].copy()
+#     del transactions_df
+#     csr_pred = transform(transactions_pred)
+#
+#     latest_model = load_model()
+#
+#     df_preds = score(csr_pred, latest_model)
+#     df_preds.to_csv('data/local_test.csv', index=False)
+#     print('Total time:', str(datetime.utcnow() - start))
