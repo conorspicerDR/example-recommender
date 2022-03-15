@@ -1,10 +1,7 @@
-import pandas as pd
-import numpy as np
+# https://github.com/datarobot/datarobot-user-models/blob/master/DEFINE-INFERENCE-MODEL.md#unstructured_inference_model
+
 from scipy.sparse import load_npz
 import pickle
-
-def transform(data):
-    return data
 
 
 def load_model(code_dir=''):
@@ -13,49 +10,45 @@ def load_model(code_dir=''):
     return model
 
 
-def score_unstructured(customers, model, **kwargs):
+def score_unstructured(model, customer_id, **kwargs):
     csr = load_npz('matrix.npz')
+
+    # user ID lookup
     with open('user_map.pkl', 'rb') as f:
         user_map = pickle.load(f)
-    user_ids = {uidx: u for u, uidx in user_map.items()}
 
+    # item ID lookup
     with open('item_map.pkl', 'rb') as f:
         item_map = pickle.load(f)
     item_ids = {idx: i for i, idx in item_map.items()}
 
-    customers['user_id'] = customers['customer_id'].map(user_map)
-    customers_to_score = customers[customers['user_id'].notnull()]['user_id'].unique()
-
-    preds = []
+    user_id = user_map[customer_id]
+    # Note: if csr is empty for a user model will always predict items with index 0-11
     ids, scores = model.recommend(
-        customers_to_score,
-        csr[customers_to_score],
+        user_id,
+        csr[user_id],
         N=12,
-        filter_already_liked_items=False
+        filter_already_liked_items=True
     )
 
-    for i, userid in enumerate(customers_to_score):
-        customer_id = user_ids[userid]
-        user_items = ids[i]
-        article_ids = [item_ids[item_id] for item_id in user_items]
-        preds.append((customer_id, ' '.join(article_ids)))
+    article_ids = [item_ids[item_id] for item_id in ids]
 
-    df_preds = pd.DataFrame(preds, columns=['customer_id', 'prediction'])
-
-    # join any rows not scored (unknown ID)
-    return customers[['customer_id']].merge(df_preds, how='left', on=['customer_id'])
+    return {
+        'customer_id': customer_id,
+        'prediction': ' '.join(article_ids)
+    }
 
 
 # local testing
-if __name__ == '__main__':
-    from datetime import datetime
-
-    start = datetime.utcnow()
-    print('Started at', start)
-    customer_sample = pd.read_csv('data/customers.csv').sample(1000)
-
-    latest_model = load_model()
-
-    predictions = score_unstructured(customer_sample, latest_model)
-    predictions.to_csv('data/local_test.csv', index=False)
-    print('Total time:', str(datetime.utcnow() - start))
+# if __name__ == '__main__':
+#     from datetime import datetime
+#
+#     start = datetime.utcnow()
+#     print('Started at', start)
+#     customer_sample = '000058a12d5b43e67d225668fa1f8d618c13dc232df0cad8ffe7ad4a1091e318'
+#
+#     latest_model = load_model()
+#
+#     prediction = score_unstructured(latest_model, customer_sample)
+#     print(prediction)
+#     print('Total time:', str(datetime.utcnow() - start))
