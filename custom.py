@@ -2,44 +2,22 @@ import pandas as pd
 import numpy as np
 from scipy.sparse import coo_matrix
 import pickle
-from datetime import datetime
-
-base_path = 'data/'
-csv_train = f'{base_path}transactions_train.csv'
-csv_sub = f'{base_path}sample_submission.csv'
-csv_users = f'{base_path}customers.csv'
-csv_items = f'{base_path}articles.csv'
-
-df = pd.read_csv(csv_train, dtype={'article_id': str}, parse_dates=['t_dat'])
-df_sub = pd.read_csv(csv_sub)
-dfu = pd.read_csv(csv_users)
-dfi = pd.read_csv(csv_items, dtype={'article_id': str})
-
-ALL_USERS = dfu['customer_id'].unique().tolist()
-ALL_ITEMS = dfi['article_id'].unique().tolist()
-
-user_ids = dict(list(enumerate(ALL_USERS)))
-item_ids = dict(list(enumerate(ALL_ITEMS)))
-
-# map given IDs to 0-N IDs
-user_map = {u: uidx for uidx, u in user_ids.items()}
-item_map = {i: iidx for iidx, i in item_ids.items()}
-
-df['user_id'] = df['customer_id'].map(user_map)
-df['item_id'] = df['article_id'].map(item_map)
-
-row = df['user_id'].values
-col = df['item_id'].values
-data = np.ones(df.shape[0])
-
-del df, dfu, dfi, user_map
-coo_train = coo_matrix((data, (row, col)), shape=(len(ALL_USERS), len(ALL_ITEMS)))
-csr_train = coo_train.tocsr()
+from config import user_map, item_map, ALL_USERS, ALL_ITEMS, user_ids, item_ids
 
 
 def transform(data):
     """ Turn a dataframe with transactions into a COO sparse items x users matrix"""
-    return data
+    data['user_id'] = data['customer_id'].map(user_map)
+    data['item_id'] = data['article_id'].map(item_map)
+
+    # create sparse matrices
+    row = data['user_id'].values
+    col = data['item_id'].values
+    data = np.ones(data.shape[0])
+    coo_train = coo_matrix((data, (row, col)), shape=(len(ALL_USERS), len(ALL_ITEMS)))
+    csr_train = coo_train.tocsr()
+
+    return csr_train
 
 
 def load_model():
@@ -66,11 +44,24 @@ def score(data, model, **kwargs):
     return predictions
 
 
+# local testing
 if __name__ == '__main__':
+    from datetime import datetime
+
     start = datetime.utcnow()
+    print('Started at', start)
+
+    base_path = 'data/'
+    csv_train = f'{base_path}transactions_train.csv'
+    transactions_df = pd.read_csv(csv_train, dtype={'article_id': str}, parse_dates=['t_dat'])
+
+    prediction_cut = transactions_df['t_dat'].max() - pd.Timedelta(days=30)
+    transactions_pred = transactions_df[transactions_df['t_dat'] > prediction_cut].copy()
+    del transactions_df
+    csr_pred = transform(transactions_pred)
+
     latest_model = load_model()
 
-    df_preds = score(csr_train, latest_model)
+    df_preds = score(csr_pred, latest_model)
     df_preds.to_csv('data/local_test.csv', index=False)
-    print('Total time:'(datetime.utcnow() - start).total_seconds())
-
+    print('Total time:', str(datetime.utcnow() - start))
