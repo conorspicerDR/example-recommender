@@ -1,7 +1,6 @@
 import pandas as pd
 
 base_path = 'data/'
-csv_sub = f'{base_path}sample_submission.csv'
 csv_users = f'{base_path}customers.csv'
 csv_items = f'{base_path}articles.csv'
 
@@ -9,7 +8,7 @@ csv_items = f'{base_path}articles.csv'
 dfu = pd.read_csv(csv_users)
 dfi = pd.read_csv(csv_items, dtype={'article_id': str})
 
-# Assign autoincrementing ids starting from 0 to both users and items
+# Assign auto-incrementing ids starting from 0 to both users and items
 ALL_USERS = dfu['customer_id'].unique().tolist()
 ALL_ITEMS = dfi['article_id'].unique().tolist()
 user_ids = dict(list(enumerate(ALL_USERS)))
