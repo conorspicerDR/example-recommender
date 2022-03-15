@@ -1,8 +1,8 @@
 import pandas as pd
 
 base_path = 'data/'
-csv_users = f'{base_path}customers.csv'
-csv_items = f'{base_path}articles.csv'
+csv_users = 'customers.csv'
+csv_items = 'articles.csv'
 
 # load users & items data
 dfu = pd.read_csv(csv_users)

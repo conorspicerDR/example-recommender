@@ -6,7 +6,7 @@ from config import user_map, item_map, ALL_USERS, ALL_ITEMS, user_ids, item_ids
 
 
 def transform(data):
-    """ Turn a dataframe with transactions into a COO sparse items x users matrix"""
+    """ Turn a dataframe with customer IDs into a COO sparse users x items matrix"""
     data['user_id'] = data['customer_id'].map(user_map)
     data['item_id'] = data['article_id'].map(item_map)
 
@@ -20,13 +20,13 @@ def transform(data):
     return csr_train
 
 
-def load_model():
+def load_model(code_dir=''):
     with open('model.sav', 'rb') as pickle_in:
         model = pickle.load(pickle_in)
     return model
 
 
-def score(data, model, **kwargs):
+def score_unstructured(data, model, **kwargs):
     preds = []
     batch_size = 2000
     to_generate = np.arange(len(ALL_USERS))
