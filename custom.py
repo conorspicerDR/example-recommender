@@ -33,10 +33,10 @@ def score_unstructured(model, customer_id, **kwargs):
 
     article_ids = [item_ids[item_id] for item_id in ids]
 
-    return {
+    return str({
         'customer_id': customer_id,
         'prediction': ' '.join(article_ids)
-    }
+    })
 
 
 # local testing
