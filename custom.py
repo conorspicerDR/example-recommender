@@ -23,15 +23,17 @@ def score_unstructured(model, customer_id, **kwargs):
     item_ids = {idx: i for i, idx in item_map.items()}
 
     user_id = user_map[customer_id]
-    # Note: if csr is empty for a user model will always predict items with index 0-11
-    ids, scores = model.recommend(
-        user_id,
-        csr[user_id],
-        N=12,
-        filter_already_liked_items=True
-    )
-
-    article_ids = [item_ids[item_id] for item_id in ids]
+    # if csr is empty for a user model will always predict items with index 0-11
+    if user_id:
+        ids, scores = model.recommend(
+            user_id,
+            csr[user_id],
+            N=12,
+            filter_already_liked_items=True
+        )
+        article_ids = [item_ids[item_id] for item_id in ids]
+    else:
+        article_ids = []
 
     return str({
         'customer_id': customer_id,
