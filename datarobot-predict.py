@@ -1,4 +1,3 @@
-import requests
 import pandas as pd
 from credentials import *
 
@@ -14,7 +13,7 @@ headers = {
 url = API_URL.format(deployment_id=DEPLOYMENT_ID)
 
 
-async def make_prediction_request(customer_id: str, session: ClientSession, **kwargs) -> tuple:
+async def make_prediction_request(customer_id: str, session: ClientSession, **kwargs) -> dict:
     try:
         resp = await session.request(method="POST", url=url, headers=headers, data=customer_id, **kwargs)
         content = await resp.text()
@@ -23,7 +22,7 @@ async def make_prediction_request(customer_id: str, session: ClientSession, **kw
     return ast.literal_eval(content)
 
 
-async def make_requests(customer_ids: set, **kwargs) -> None:
+async def make_requests(customer_ids: set, **kwargs) -> tuple:
     async with ClientSession() as session:
         tasks = []
         for customer_id in customer_ids:
