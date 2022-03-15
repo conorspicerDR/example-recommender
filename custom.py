@@ -7,10 +7,7 @@ import pickle
 def load_model(code_dir=''):
     with open('model.sav', 'rb') as pickle_in:
         model = pickle.load(pickle_in)
-    return model
 
-
-def score_unstructured(model, customer_id, **kwargs):
     csr = load_npz('matrix.npz')
 
     # user ID lookup
@@ -22,16 +19,21 @@ def score_unstructured(model, customer_id, **kwargs):
         item_map = pickle.load(f)
     item_ids = {idx: i for i, idx in item_map.items()}
 
-    user_id = user_map.get(customer_id)
+    return {'model': model, 'csr': csr, 'user_map': user_map, 'item_ids': item_ids,}
+
+
+def score_unstructured(m, customer_id, **kwargs):
+
+    user_id = m['user_map'].get(customer_id)
     # if csr is empty for a user, but their ID has been seen, model will always predict items with index 0-11
     if user_id:
-        ids, scores = model.recommend(
+        ids, scores = m['model'].recommend(
             user_id,
-            csr[user_id],
+            m['csr'][user_id],
             N=12,
             filter_already_liked_items=True
         )
-        article_ids = [item_ids[item_id] for item_id in ids]
+        article_ids = [m['item_ids'][item_id] for item_id in ids]
     else:
         article_ids = []
 
