@@ -19,7 +19,7 @@ def load_model(code_dir=''):
         item_map = pickle.load(f)
     item_ids = {idx: i for i, idx in item_map.items()}
 
-    return {'model': model, 'csr': csr, 'user_map': user_map, 'item_ids': item_ids,}
+    return {'model': model, 'csr': csr, 'user_map': user_map, 'item_ids': item_ids}
 
 
 def score_unstructured(m, customer_id, **kwargs):

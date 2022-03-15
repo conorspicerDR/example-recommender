@@ -1,21 +1,45 @@
 import requests
+import pandas as pd
 from credentials import *
 
-if __name__ == '__main__':
+import asyncio
+import ast
+from aiohttp import ClientSession, ClientConnectorError
 
-    headers = {
-        'Content-Type': '{};charset={}'.format('text/plain', 'utf-8'),
-        'Authorization': 'Bearer {}'.format(API_KEY),
-        'DataRobot-Key': DATAROBOT_KEY,
-    }
+headers = {
+    'Content-Type': '{};charset={}'.format('text/plain', 'utf-8'),
+    'Authorization': 'Bearer {}'.format(API_KEY),
+    'DataRobot-Key': DATAROBOT_KEY,
+}
+url = API_URL.format(deployment_id=DEPLOYMENT_ID)
 
-    url = API_URL.format(deployment_id=DEPLOYMENT_ID)
 
-    # Make API request for predictions
-    predictions_response = requests.post(
-        url,
-        data='00609a1cc562140fa87a6de432bef9c9f0b936b259ad3075eb2a65008df1dbab',
-        headers=headers,
-    )
+async def make_prediction_request(customer_id: str, session: ClientSession, **kwargs) -> tuple:
+    try:
+        resp = await session.request(method="POST", url=url, headers=headers, data=customer_id, **kwargs)
+        content = await resp.text()
+    except ClientConnectorError:
+        return {'customer_id': customer_id, 'prediction': ''}
+    return ast.literal_eval(content)
 
-    print(predictions_response.text)
+
+async def make_requests(customer_ids: set, **kwargs) -> None:
+    async with ClientSession() as session:
+        tasks = []
+        for customer_id in customer_ids:
+            tasks.append(
+                make_prediction_request(customer_id, session=session, **kwargs)
+            )
+        results = await asyncio.gather(*tasks)
+    return results
+
+
+if __name__ == "__main__":
+    from datetime import datetime
+    start = datetime.utcnow()
+
+    test_customer_ids = set(pd.read_csv('data/customers_1000.csv')['customer_id'])
+    predictions = asyncio.run(make_requests(test_customer_ids))
+
+    print(predictions)
+    print('Total time:', str(datetime.utcnow() - start))
