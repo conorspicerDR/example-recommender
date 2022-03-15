@@ -1,3 +1,10 @@
+/data/
+/model.sav
+/matrix.npz
+/item_map.pkl
+/user_map.pkl
+*.ipynb
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -127,5 +134,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/data/
-/model.sav
+
+
