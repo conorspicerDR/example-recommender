@@ -1,4 +1,4 @@
-/data/
+/credentials.py
 /model.sav
 /matrix.npz
 /item_map.pkl
@@ -136,4 +136,3 @@ dmypy.json
 .pyre/
 
 
-/credentials.py
