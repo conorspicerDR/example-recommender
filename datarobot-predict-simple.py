@@ -35,5 +35,6 @@ if __name__ == '__main__':
     df['predictions'] = df['customer_id'].apply(get_predictions)
     df.to_csv('data/simple_preds.csv', index=False)
 
-    print('Finished at:', str(start))
+    end = datetime.utcnow()
+    print('Finished at:', str(end))
     print('Total time:', str(datetime.utcnow() - start))

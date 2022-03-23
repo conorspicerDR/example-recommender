@@ -35,10 +35,14 @@ async def make_requests(customer_ids: set, **kwargs) -> tuple:
 
 if __name__ == "__main__":
     from datetime import datetime
+
     start = datetime.utcnow()
+    print('Starting at:', str(start))
 
     test_customer_ids = set(pd.read_csv('data/customers_1000.csv')['customer_id'])
     predictions = asyncio.run(make_requests(test_customer_ids))
 
     print(predictions)
-    print('Total time:', str(datetime.utcnow() - start))
+    end = datetime.utcnow()
+    print('Finished at:', str(end))
+    print('Total time:', str(end - start))
