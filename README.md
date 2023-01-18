@@ -1,4 +1,4 @@
-# jlp-recommender
+# example-recommender
 Recommender model example based on H&amp;M kaggle dataset & deployed as a custom model in DataRobot
 
 This is a recommender project using https://www.kaggle.com/c/h-and-m-personalized-fashion-recommendations/overview
